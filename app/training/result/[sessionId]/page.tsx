@@ -210,7 +210,9 @@ export default function SessionResultPage({
     } catch (err) {
       console.error("Failed to generate training ground:", err);
       setError(
-        err instanceof Error ? err.message : "Failed to generate training ground",
+        err instanceof Error
+          ? err.message
+          : "Failed to generate training ground",
       );
       setIsGenerating(false);
     }

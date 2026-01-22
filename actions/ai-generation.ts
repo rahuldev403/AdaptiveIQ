@@ -214,7 +214,8 @@ const DEMO_MOCK_RESPONSE = {
     },
     {
       id: "rsc-3",
-      question: "How do you mark a component as a Server Component in Next.js App Router?",
+      question:
+        "How do you mark a component as a Server Component in Next.js App Router?",
       options: [
         "Add 'use server' directive at the top",
         "Export it with async function syntax",
@@ -280,12 +281,16 @@ export async function generateLiveQuiz(
     // Try to fetch from You.com API unless in demo mode
     if (!isDemoMode) {
       try {
-        console.log(`🔍 Attempting to fetch questions from You.com for: ${weakTopic}`);
+        console.log(
+          `🔍 Attempting to fetch questions from You.com for: ${weakTopic}`,
+        );
         const apiResponse = await fetchQuestionsFromYouAPI(weakTopic);
         questions = apiResponse.questions;
         citations = apiResponse.citations;
         sourceLinks = apiResponse.sourceLinks;
-        console.log(`✅ Successfully fetched ${questions.length} questions from You.com`);
+        console.log(
+          `✅ Successfully fetched ${questions.length} questions from You.com`,
+        );
       } catch (apiError) {
         console.warn(
           `⚠️  You.com API failed, falling back to demo data:`,

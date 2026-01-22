@@ -32,7 +32,8 @@ interface TrainingData {
 const mockTrainingData: TrainingData = {
   question: {
     id: "training-1",
-    question: "How do you implement memoization in React to optimize recursive components?",
+    question:
+      "How do you implement memoization in React to optimize recursive components?",
     codeSnippet: `function Fibonacci({ n }) {
   // How would you optimize this?
   const calculate = (num) => {
@@ -63,21 +64,24 @@ const mockTrainingData: TrainingData = {
         title: "useMemo – React Official Documentation",
         url: "https://react.dev/reference/react/useMemo",
         lastUpdated: "2024",
-        snippet: "useMemo is a React Hook that lets you cache the result of a calculation between re-renders.",
+        snippet:
+          "useMemo is a React Hook that lets you cache the result of a calculation between re-renders.",
       },
       {
         domain: "web.dev",
         title: "Optimize React Performance with Memoization",
         url: "https://web.dev/react-performance-memoization",
         lastUpdated: "2025",
-        snippet: "Learn how to use React's memoization features to prevent unnecessary re-renders and optimize expensive calculations.",
+        snippet:
+          "Learn how to use React's memoization features to prevent unnecessary re-renders and optimize expensive calculations.",
       },
       {
         domain: "github.com",
         title: "React Performance Optimization Patterns",
         url: "https://github.com/facebook/react/discussions/15312",
         lastUpdated: "2024",
-        snippet: "Community discussion on best practices for optimizing React components including memoization strategies.",
+        snippet:
+          "Community discussion on best practices for optimizing React components including memoization strategies.",
       },
     ],
   },
@@ -87,7 +91,10 @@ const mockTrainingData: TrainingData = {
  * Live Context Panel - Right Side
  * Shows You.com sourced documentation and resources
  */
-function LiveContextPanel({ liveContext, onUseHint }: { 
+function LiveContextPanel({
+  liveContext,
+  onUseHint,
+}: {
   liveContext: TrainingData["liveContext"];
   onUseHint: (citation: string) => void;
 }) {
@@ -99,9 +106,7 @@ function LiveContextPanel({ liveContext, onUseHint }: {
       <div className="p-6 border-b border-slate-800 bg-slate-900/50">
         <div className="flex items-center gap-2 mb-2">
           <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <h2 className="text-lg font-bold text-slate-100">
-            Live Context
-          </h2>
+          <h2 className="text-lg font-bold text-slate-100">Live Context</h2>
         </div>
         <p className="text-sm text-slate-400">
           Sourced via You.com • Latest 2025 documentation
@@ -125,12 +130,18 @@ function LiveContextPanel({ liveContext, onUseHint }: {
                 transition={{ delay: index * 0.1 }}
               >
                 <button
-                  onClick={() => setExpandedCitation(expandedCitation === index ? null : index)}
+                  onClick={() =>
+                    setExpandedCitation(
+                      expandedCitation === index ? null : index,
+                    )
+                  }
                   className="w-full text-left p-4 bg-slate-900 border border-slate-800 rounded-lg hover:border-indigo-500/50 transition-all group"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-sm text-slate-300 flex-1 line-clamp-2 group-hover:text-slate-100">
-                      {expandedCitation === index ? citation : citation.slice(0, 80) + "..."}
+                      {expandedCitation === index
+                        ? citation
+                        : citation.slice(0, 80) + "..."}
                     </p>
                     <Button
                       size="sm"
@@ -314,7 +325,9 @@ export default function TrainingGroundPage({
               <Button
                 size="lg"
                 variant="outline"
-                onClick={() => handleUseHint(mockTrainingData.liveContext.citations[0])}
+                onClick={() =>
+                  handleUseHint(mockTrainingData.liveContext.citations[0])
+                }
                 className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/50"
               >
                 <Lightbulb className="w-5 h-5 mr-2" />
