@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -43,7 +43,13 @@ const navItems = [
 export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const pathname = usePathname();
+
+  // Fix SSR hydration - only access window on client
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   return (
     <>
@@ -73,7 +79,7 @@ export function Sidebar() {
         <motion.aside
           initial={{ x: -300 }}
           animate={{
-            x: isOpen || window.innerWidth >= 1024 ? 0 : -300,
+            x: isOpen || (isMounted && window.innerWidth >= 1024) ? 0 : -300,
             width: isCollapsed ? 80 : 280,
           }}
           transition={{ type: "spring", damping: 25, stiffness: 200 }}

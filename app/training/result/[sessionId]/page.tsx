@@ -3,7 +3,13 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Microscope, ArrowRight, TrendingDown, Clock, Target } from "lucide-react";
+import {
+  Microscope,
+  ArrowRight,
+  TrendingDown,
+  Clock,
+  Target,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
@@ -96,7 +102,10 @@ function ScoreHero({ score, correctAnswers, totalQuestions }: ScoreHeroProps) {
       >
         <p className="text-lg text-slate-300">
           Good effort, but you struggled with{" "}
-          <span className="font-bold text-rose-400">{mockSessionData.weakTopic}</span>.
+          <span className="font-bold text-rose-400">
+            {mockSessionData.weakTopic}
+          </span>
+          .
         </p>
       </motion.div>
     </motion.div>
@@ -264,10 +273,10 @@ export default function SessionResultPage({
                 Detected Gap: {mockSessionData.weakTopic}
               </h3>
               <p className="text-slate-400 mb-6">
-                We noticed you took {mockSessionData.avgTimePerQuestion}s+ on simple{" "}
-                {mockSessionData.weakTopic.toLowerCase()} logic. Let's patch this gap
-                with live data from the latest 2025 documentation and real-world
-                examples.
+                We noticed you took {mockSessionData.avgTimePerQuestion}s+ on
+                simple {mockSessionData.weakTopic.toLowerCase()} logic. Let's
+                patch this gap with live data from the latest 2025 documentation
+                and real-world examples.
               </p>
 
               {/* Action Button or Loading Terminal */}
