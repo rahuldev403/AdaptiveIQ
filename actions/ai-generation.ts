@@ -178,77 +178,158 @@ Return in this EXACT JSON format:
 }
 
 /**
+ * Generate dynamic demo data based on the topic
+ */
+function generateDemoDataForTopic(topic: string) {
+  // Normalize topic for matching
+  const normalizedTopic = topic.toLowerCase().trim();
+
+  // MongoDB Aggregation specific questions
+  if (
+    normalizedTopic.includes("mongodb") ||
+    normalizedTopic.includes("aggregation")
+  ) {
+    return {
+      questions: [
+        {
+          id: "mongo-1",
+          question:
+            "What is the primary purpose of the $group stage in MongoDB aggregation?",
+          options: [
+            "To filter documents",
+            "To group documents by a specified identifier and perform accumulations",
+            "To sort documents",
+            "To join collections",
+          ],
+          correct_answer: 1,
+          explanation:
+            "The $group stage groups documents by a specified _id expression and applies accumulator expressions like $sum, $avg, $max, etc., to each group.",
+          difficulty: "medium" as const,
+        },
+        {
+          id: "mongo-2",
+          question:
+            "Which operator would you use to reshape documents in the aggregation pipeline?",
+          options: ["$match", "$group", "$project", "$sort"],
+          correct_answer: 2,
+          explanation:
+            "$project is used to reshape documents, include or exclude fields, add computed fields, and create new fields with expressions.",
+          difficulty: "easy" as const,
+        },
+        {
+          id: "mongo-3",
+          question: "What does the $lookup stage do in MongoDB aggregation?",
+          options: [
+            "Searches for text in documents",
+            "Performs a left outer join with another collection",
+            "Looks up indexed fields",
+            "Validates document schemas",
+          ],
+          correct_answer: 1,
+          explanation:
+            "$lookup performs a left outer join to an unsharded collection in the same database, allowing you to combine data from multiple collections.",
+          difficulty: "medium" as const,
+        },
+      ],
+      citations: [
+        {
+          title: "MongoDB Aggregation Pipeline – Official Docs",
+          url: "https://www.mongodb.com/docs/manual/core/aggregation-pipeline/",
+          snippet:
+            "The aggregation pipeline is a framework for data aggregation modeled on the concept of data processing pipelines.",
+        },
+        {
+          title: "Aggregation Pipeline Stages",
+          url: "https://www.mongodb.com/docs/manual/reference/operator/aggregation-pipeline/",
+          snippet:
+            "Pipeline stages appear in an array. Documents pass through the stages in sequence.",
+        },
+        {
+          title: "MongoDB $lookup Documentation",
+          url: "https://www.mongodb.com/docs/manual/reference/operator/aggregation/lookup/",
+          snippet:
+            "Performs a left outer join to a collection in the same database to filter in documents from the joined collection.",
+        },
+      ],
+    };
+  }
+
+  // Default React Server Components (original demo data)
+  return {
+    questions: [
+      {
+        id: "rsc-1",
+        question: "What is the primary benefit of React Server Components?",
+        options: [
+          "They run on the client for better performance",
+          "They can access server-only resources without an API layer",
+          "They replace all client components",
+          "They automatically cache all data",
+        ],
+        correct_answer: 1,
+        explanation:
+          "React Server Components can directly access server-only resources like databases, file systems, or environment variables without needing to create an API endpoint. This reduces the amount of code needed and improves performance by eliminating unnecessary round trips.",
+        difficulty: "medium" as const,
+      },
+      {
+        id: "rsc-2",
+        question:
+          "Which of the following CANNOT be used in a React Server Component?",
+        options: [
+          "async/await syntax",
+          "useState hook",
+          "Direct database queries",
+          "File system access",
+        ],
+        correct_answer: 1,
+        explanation:
+          "React Server Components cannot use React hooks like useState, useEffect, or event listeners because they run on the server and don't re-render. They are meant for fetching data and rendering once on the server.",
+        difficulty: "easy" as const,
+      },
+      {
+        id: "rsc-3",
+        question:
+          "How do you mark a component as a Server Component in Next.js App Router?",
+        options: [
+          "Add 'use server' directive at the top",
+          "Export it with async function syntax",
+          "Components are Server Components by default",
+          "Import from 'react/server'",
+        ],
+        correct_answer: 2,
+        explanation:
+          "In Next.js 13+ App Router, all components are Server Components by default unless you explicitly add 'use client' at the top of the file. This is the opposite of the Pages Router where components were Client Components by default.",
+        difficulty: "medium" as const,
+      },
+    ],
+    citations: [
+      {
+        title: "React Server Components – Next.js Official Docs",
+        url: "https://nextjs.org/docs/app/building-your-application/rendering/server-components",
+        snippet:
+          "Server Components allow you to render components on the server and send the rendered output to the client. This enables zero-bundle-size components.",
+      },
+      {
+        title: "Server and Client Components – React Docs",
+        url: "https://react.dev/reference/rsc/server-components",
+        snippet:
+          "Server Components are a new type of Component that renders ahead of time, before bundling, in an environment separate from your client app or SSR server.",
+      },
+      {
+        title: "Understanding React Server Components",
+        url: "https://vercel.com/blog/understanding-react-server-components",
+        snippet:
+          "React Server Components represent a fundamental shift in how we build React applications, enabling direct server access without API routes.",
+      },
+    ],
+  };
+}
+
+/**
  * Demo Fallback Data - Perfect Mock Response
  * Used when API fails or DEMO_MODE is enabled
  */
-const DEMO_MOCK_RESPONSE = {
-  questions: [
-    {
-      id: "rsc-1",
-      question: "What is the primary benefit of React Server Components?",
-      options: [
-        "They run on the client for better performance",
-        "They can access server-only resources without an API layer",
-        "They replace all client components",
-        "They automatically cache all data",
-      ],
-      correct_answer: 1,
-      explanation:
-        "React Server Components can directly access server-only resources like databases, file systems, or environment variables without needing to create an API endpoint. This reduces the amount of code needed and improves performance by eliminating unnecessary round trips.",
-      difficulty: "medium" as const,
-    },
-    {
-      id: "rsc-2",
-      question:
-        "Which of the following CANNOT be used in a React Server Component?",
-      options: [
-        "async/await syntax",
-        "useState hook",
-        "Direct database queries",
-        "File system access",
-      ],
-      correct_answer: 1,
-      explanation:
-        "React Server Components cannot use React hooks like useState, useEffect, or event listeners because they run on the server and don't re-render. They are meant for fetching data and rendering once on the server.",
-      difficulty: "easy" as const,
-    },
-    {
-      id: "rsc-3",
-      question:
-        "How do you mark a component as a Server Component in Next.js App Router?",
-      options: [
-        "Add 'use server' directive at the top",
-        "Export it with async function syntax",
-        "Components are Server Components by default",
-        "Import from 'react/server'",
-      ],
-      correct_answer: 2,
-      explanation:
-        "In Next.js 13+ App Router, all components are Server Components by default unless you explicitly add 'use client' at the top of the file. This is the opposite of the Pages Router where components were Client Components by default.",
-      difficulty: "medium" as const,
-    },
-  ],
-  citations: [
-    {
-      title: "React Server Components – Next.js Official Docs",
-      url: "https://nextjs.org/docs/app/building-your-application/rendering/server-components",
-      snippet:
-        "Server Components allow you to render components on the server and send the rendered output to the client. This enables zero-bundle-size components.",
-    },
-    {
-      title: "Server and Client Components – React Docs",
-      url: "https://react.dev/reference/rsc/server-components",
-      snippet:
-        "Server Components are a new type of Component that renders ahead of time, before bundling, in an environment separate from your client app or SSR server.",
-    },
-    {
-      title: "Understanding React Server Components",
-      url: "https://vercel.com/blog/understanding-react-server-components",
-      snippet:
-        "React Server Components represent a fundamental shift in how we build React applications, enabling direct server access without API routes.",
-    },
-  ],
-};
+const DEMO_MOCK_RESPONSE = generateDemoDataForTopic("React Server Components");
 
 /**
  * Main action: Generate a live quiz based on a weak topic
@@ -296,17 +377,21 @@ export async function generateLiveQuiz(
           `⚠️  You.com API failed, falling back to demo data:`,
           apiError instanceof Error ? apiError.message : apiError,
         );
-        // Fallback to demo data
-        questions = DEMO_MOCK_RESPONSE.questions;
-        citations = DEMO_MOCK_RESPONSE.citations;
-        sourceLinks = DEMO_MOCK_RESPONSE.citations.map((c) => c.url);
+        // Fallback to demo data with the actual topic
+        const demoData = generateDemoDataForTopic(weakTopic);
+        questions = demoData.questions;
+        citations = demoData.citations;
+        sourceLinks = demoData.citations.map((c) => c.url);
       }
     } else {
-      console.log(`🎭 DEMO_MODE enabled, using mock response`);
-      // Use demo data directly
-      questions = DEMO_MOCK_RESPONSE.questions;
-      citations = DEMO_MOCK_RESPONSE.citations;
-      sourceLinks = DEMO_MOCK_RESPONSE.citations.map((c) => c.url);
+      console.log(
+        `🎭 DEMO_MODE enabled, using mock response for topic: ${weakTopic}`,
+      );
+      // Use demo data for the actual topic
+      const demoData = generateDemoDataForTopic(weakTopic);
+      questions = demoData.questions;
+      citations = demoData.citations;
+      sourceLinks = demoData.citations.map((c) => c.url);
     }
 
     // Create the training ground document
@@ -341,15 +426,16 @@ export async function generateLiveQuiz(
 
     // Even in catastrophic failure, try to return demo data
     try {
+      const demoData = generateDemoDataForTopic(weakTopic);
       const trainingGround: TrainingGround = {
         user_id: userId,
         topic: weakTopic,
         generated_at: new Date(),
         raw_ai_response: {
-          questions: DEMO_MOCK_RESPONSE.questions,
-          citations: DEMO_MOCK_RESPONSE.citations,
+          questions: demoData.questions,
+          citations: demoData.citations,
         },
-        source_links: DEMO_MOCK_RESPONSE.citations.map((c) => c.url),
+        source_links: demoData.citations.map((c) => c.url),
       };
 
       const client = await connectDB();

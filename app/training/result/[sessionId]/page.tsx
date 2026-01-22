@@ -8,31 +8,98 @@ import {
   Microscope,
   ArrowRight,
   TrendingDown,
+  TrendingUp,
   Clock,
   Target,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { generateLiveQuiz } from "@/actions/ai-generation";
+import { AnswerResult } from "@/hooks/useQuizEngine";
 
-// Mock session data - replace with real data fetching
+// Session data interface
 interface SessionResult {
   score: number;
-  weakTopic: string;
+  weakTopics: string[];
+  strongTopics: string[];
   timeTaken: string;
   totalQuestions: number;
   correctAnswers: number;
   avgTimePerQuestion: number;
+  topicBreakdown: {
+    topic: string;
+    correct: number;
+    total: number;
+    percentage: number;
+  }[];
 }
 
-const mockSessionData: SessionResult = {
-  score: 70,
-  weakTopic: "Recursion",
-  timeTaken: "12m",
-  totalQuestions: 10,
-  correctAnswers: 7,
-  avgTimePerQuestion: 45,
-};
+/**
+ * Analyze quiz session performance
+ */
+function analyzeSessionPerformance(answers: AnswerResult[]): SessionResult {
+  const totalQuestions = answers.length;
+  const correctAnswers = answers.filter((a) => a.isCorrect).length;
+  const score = Math.round((correctAnswers / totalQuestions) * 100);
+  
+  // Calculate average time
+  const totalTime = answers.reduce((sum, a) => sum + a.timeTaken, 0);
+  const avgTimePerQuestion = Math.round(totalTime / totalQuestions);
+  const timeTaken = `${Math.floor(totalTime / 60)}m ${Math.round(totalTime % 60)}s`;
+  
+  // Analyze performance by topic
+  const topicPerformance: Record<string, { correct: number; total: number }> = {};
+  
+  answers.forEach((answer) => {
+    const topic = answer.topic || "General";
+    if (!topicPerformance[topic]) {
+      topicPerformance[topic] = { correct: 0, total: 0 };
+    }
+    topicPerformance[topic].total++;
+    if (answer.isCorrect) {
+      topicPerformance[topic].correct++;
+    }
+  });
+  
+  // Create topic breakdown
+  const topicBreakdown = Object.entries(topicPerformance).map(
+    ([topic, stats]) => ({
+      topic,
+      correct: stats.correct,
+      total: stats.total,
+      percentage: Math.round((stats.correct / stats.total) * 100),
+    })
+  );
+  
+  // Sort by percentage to find weak and strong topics
+  const sortedByPerformance = [...topicBreakdown].sort(
+    (a, b) => a.percentage - b.percentage
+  );
+  
+  // Weak topics: bottom 2 topics with < 70% accuracy
+  const weakTopics = sortedByPerformance
+    .filter((t) => t.percentage < 70)
+    .slice(0, 2)
+    .map((t) => t.topic);
+  
+  // Strong topics: top 2 topics with > 80% accuracy
+  const strongTopics = sortedByPerformance
+    .filter((t) => t.percentage > 80)
+    .slice(-2)
+    .map((t) => t.topic)
+    .reverse();
+  
+  return {
+    score,
+    weakTopics,
+    strongTopics,
+    timeTaken,
+    totalQuestions,
+    correctAnswers,
+    avgTimePerQuestion,
+    topicBreakdown,
+  };
+}
 
 /**
  * Circular Score Hero Component
@@ -189,10 +256,59 @@ export default function SessionResultPage({
   const { userId } = useAuth();
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sessionData, setSessionData] = useState<SessionResult | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load session data from localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedData = localStorage.getItem(`quiz-session-${params.sessionId}`);
+      
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          const analyzed = analyzeSessionPerformance(parsed.answers || []);
+          setSessionData(analyzed);
+        } catch (e) {
+          console.error("Failed to parse session data:", e);
+          // Use fallback data
+          setSessionData({
+            score: 70,
+            weakTopics: ["Algorithms"],
+            strongTopics: ["React Hooks"],
+            timeTaken: "5m",
+            totalQuestions: 10,
+            correctAnswers: 7,
+            avgTimePerQuestion: 30,
+            topicBreakdown: [],
+          });
+        }
+      } else {
+        // Use fallback data if no session found
+        setSessionData({
+          score: 70,
+          weakTopics: ["Algorithms"],
+          strongTopics: ["React Hooks"],
+          timeTaken: "5m",
+          totalQuestions: 10,
+          correctAnswers: 7,
+          avgTimePerQuestion: 30,
+          topicBreakdown: [],
+        });
+      }
+      
+      setIsLoading(false);
+    }
+  }, [params.sessionId]);
 
   const handleEnterTrainingGround = async () => {
     if (!userId) {
       setError("You must be logged in to access the training ground");
+      return;
+    }
+    
+    if (!sessionData) {
+      setError("Session data not available");
       return;
     }
 
@@ -200,12 +316,13 @@ export default function SessionResultPage({
     setError(null);
 
     try {
-      // Call the real server action
-      const result = await generateLiveQuiz(mockSessionData.weakTopic, userId);
+      // Call the real server action with weak topic
+      const weakTopic = sessionData.weakTopics[0] || "JavaScript";
+      const result = await generateLiveQuiz(weakTopic, userId);
 
       // Wait for terminal animation to complete (3.5 seconds)
       setTimeout(() => {
-        router.push(`/training/${result.trainingId}`);
+        router.push(`/training/${result.trainingId}?sessionId=${params.sessionId}`);
       }, 3500);
     } catch (err) {
       console.error("Failed to generate training ground:", err);
@@ -217,6 +334,18 @@ export default function SessionResultPage({
       setIsGenerating(false);
     }
   };
+
+  // Show loading state
+  if (isLoading || !sessionData) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-400">Loading session results...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
@@ -244,9 +373,9 @@ export default function SessionResultPage({
         {/* Score Hero */}
         <div className="mb-8">
           <ScoreHero
-            score={mockSessionData.score}
-            correctAnswers={mockSessionData.correctAnswers}
-            totalQuestions={mockSessionData.totalQuestions}
+            score={sessionData.score}
+            correctAnswers={sessionData.correctAnswers}
+            totalQuestions={sessionData.totalQuestions}
           />
         </div>
 
@@ -263,7 +392,7 @@ export default function SessionResultPage({
               <span className="text-sm">Time Taken</span>
             </div>
             <p className="text-2xl font-bold text-slate-100">
-              {mockSessionData.timeTaken}
+              {sessionData.timeTaken}
             </p>
           </div>
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
@@ -272,32 +401,74 @@ export default function SessionResultPage({
               <span className="text-sm">Avg. Time/Q</span>
             </div>
             <p className="text-2xl font-bold text-slate-100">
-              {mockSessionData.avgTimePerQuestion}s
+              {sessionData.avgTimePerQuestion}s
             </p>
           </div>
         </motion.div>
 
-        {/* Weakness Detection Card */}
+        {/* Performance Breakdown - Strong & Weak Topics */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-          className="bg-rose-950/10 border-2 border-rose-900/50 rounded-xl p-6 mb-6"
+          transition={{ delay: 0.7 }}
+          className="grid grid-cols-2 gap-4 mb-8"
         >
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-rose-500/10 rounded-lg border border-rose-500/20">
-              <Microscope className="w-6 h-6 text-rose-400" />
+          {/* Strong Areas */}
+          {sessionData.strongTopics.length > 0 && (
+            <div className="bg-emerald-950/30 border border-emerald-800/50 rounded-xl p-4">
+              <div className="flex items-center gap-2 text-emerald-400 mb-3">
+                <TrendingUp className="w-4 h-4" />
+                <span className="text-sm font-medium">Strong Areas</span>
+              </div>
+              <div className="space-y-2">
+                {sessionData.strongTopics.map((topic, idx) => (
+                  <div key={idx} className="text-sm text-slate-300">
+                    • {topic}
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="flex-1">
-              <h3 className="text-xl font-bold text-slate-100 mb-2">
-                Detected Gap: {mockSessionData.weakTopic}
-              </h3>
-              <p className="text-slate-400 mb-6">
-                We noticed you took {mockSessionData.avgTimePerQuestion}s+ on
-                simple {mockSessionData.weakTopic.toLowerCase()} logic. Let's
-                patch this gap with live data from the latest 2025 documentation
-                and real-world examples.
-              </p>
+          )}
+          
+          {/* Weak Areas */}
+          {sessionData.weakTopics.length > 0 && (
+            <div className="bg-rose-950/30 border border-rose-800/50 rounded-xl p-4">
+              <div className="flex items-center gap-2 text-rose-400 mb-3">
+                <TrendingDown className="w-4 h-4" />
+                <span className="text-sm font-medium">Needs Improvement</span>
+              </div>
+              <div className="space-y-2">
+                {sessionData.weakTopics.map((topic, idx) => (
+                  <div key={idx} className="text-sm text-slate-300">
+                    • {topic}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </motion.div>
+
+        {/* Weakness Detection Card */}
+        {sessionData.weakTopics.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="bg-rose-950/10 border-2 border-rose-900/50 rounded-xl p-6 mb-6"
+          >
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-rose-500/10 rounded-lg border border-rose-500/20">
+                <Microscope className="w-6 h-6 text-rose-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-slate-100 mb-2">
+                  Detected Gap: {sessionData.weakTopics[0]}
+                </h3>
+                <p className="text-slate-400 mb-6">
+                  Your performance in {sessionData.weakTopics[0]} shows room for improvement.
+                  Let's strengthen this area with live data from the latest 2025 documentation
+                  and real-world examples.
+                </p>
 
               {/* Error Message */}
               {error && (

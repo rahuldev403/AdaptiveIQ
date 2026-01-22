@@ -3,7 +3,10 @@
 import { useState, useEffect } from "react";
 import { useUser, UserButton } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { generateLiveQuiz } from "@/actions/ai-generation";
+import {
+  generateLiveQuiz,
+  getTrainingGroundById,
+} from "@/actions/ai-generation";
 import { TrainingGround } from "@/lib/db/schema";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -47,6 +50,11 @@ export default function TrainingGroundPage() {
       return;
     }
 
+    if (!user?.id) {
+      setError("You must be logged in to generate a quiz");
+      return;
+    }
+
     setIsGenerating(true);
     setError(null);
     setTrainingGround(null);
@@ -56,8 +64,17 @@ export default function TrainingGroundPage() {
     setScore(0);
 
     try {
-      const result = await generateLiveQuiz(topic);
-      setTrainingGround(result);
+      // Generate the quiz and get the training ID
+      const result = await generateLiveQuiz(topic, user.id);
+
+      // Fetch the full training ground data
+      const trainingData = await getTrainingGroundById(result.trainingId);
+
+      if (!trainingData) {
+        throw new Error("Failed to fetch training ground data");
+      }
+
+      setTrainingGround(trainingData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate quiz");
     } finally {
@@ -72,7 +89,7 @@ export default function TrainingGroundPage() {
     setShowExplanation(true);
 
     if (
-      trainingGround &&
+      trainingGround?.raw_ai_response?.questions?.[currentQuestionIndex] &&
       answerIndex ===
         trainingGround.raw_ai_response.questions[currentQuestionIndex]
           .correct_answer
@@ -83,7 +100,7 @@ export default function TrainingGroundPage() {
 
   const handleNext = () => {
     if (
-      trainingGround &&
+      trainingGround?.raw_ai_response?.questions &&
       currentQuestionIndex < trainingGround.raw_ai_response.questions.length - 1
     ) {
       setCurrentQuestionIndex((prev) => prev + 1);
@@ -102,9 +119,10 @@ export default function TrainingGroundPage() {
   };
 
   const currentQuestion =
-    trainingGround?.raw_ai_response.questions[currentQuestionIndex];
+    trainingGround?.raw_ai_response?.questions?.[currentQuestionIndex];
   const isLastQuestion =
     trainingGround &&
+    trainingGround.raw_ai_response?.questions &&
     currentQuestionIndex ===
       trainingGround.raw_ai_response.questions.length - 1;
   const isCorrect = selectedAnswer === currentQuestion?.correct_answer;

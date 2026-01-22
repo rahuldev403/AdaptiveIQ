@@ -20,6 +20,7 @@ export interface AnswerResult {
   timeTaken: number;
   difficulty: Difficulty;
   selectedAnswer: number;
+  topic?: string; // Add topic for performance analysis
 }
 
 interface UseQuizEngineProps {
@@ -572,6 +573,12 @@ export function useQuizEngine({
   const [streak, setStreak] = useState(0);
   const [questionStartTime, setQuestionStartTime] = useState(Date.now());
 
+  // Track performance per difficulty level for adaptive logic
+  const [easyCorrect, setEasyCorrect] = useState(0);
+  const [mediumCorrect, setMediumCorrect] = useState(0);
+  const [hardWrong, setHardWrong] = useState(0);
+  const [mediumWrong, setMediumWrong] = useState(0);
+
   const keyboardListenerEnabled = useRef(true);
 
   // Get current question based on difficulty
@@ -590,19 +597,21 @@ export function useQuizEngine({
     current: Difficulty,
     correct: boolean,
   ): Difficulty => {
-    const currentIndex = getDifficultyIndex(current);
-
     if (correct) {
-      // Increase difficulty up to hard
-      const nextIndex = Math.min(difficultyLevels.length - 1, currentIndex + 1);
-      return difficultyLevels[nextIndex];
-    } else {
-      // Downgrade if 2 consecutive wrong answers
-      if (consecutiveWrong >= 1) {
-        const nextIndex = Math.max(0, currentIndex - 1);
-        return difficultyLevels[nextIndex];
+      // Advance logic: 5 easy correct → medium, 4 medium correct → hard
+      if (current === "easy" && easyCorrect >= 4) {
+        return "medium";
+      } else if (current === "medium" && mediumCorrect >= 3) {
+        return "hard";
       }
-      // Otherwise stay at current difficulty
+      return current;
+    } else {
+      // Downgrade logic: 1 hard wrong → medium, 2 medium wrong → easy
+      if (current === "hard" && hardWrong >= 0) {
+        return "medium";
+      } else if (current === "medium" && mediumWrong >= 1) {
+        return "easy";
+      }
       return current;
     }
   };
@@ -619,22 +628,42 @@ export function useQuizEngine({
       setShowResult(true);
       keyboardListenerEnabled.current = false;
 
-      // Update streak
+      // Update difficulty-specific counters
       if (correct) {
         setStreak((prev) => prev + 1);
         setConsecutiveWrong(0);
+
+        // Track correct answers per difficulty
+        if (currentDifficulty === "easy") {
+          setEasyCorrect((prev) => prev + 1);
+        } else if (currentDifficulty === "medium") {
+          setMediumCorrect((prev) => prev + 1);
+          setMediumWrong(0); // Reset medium wrong counter
+        }
+        // Reset hard wrong counter on correct
+        if (currentDifficulty === "hard") {
+          setHardWrong(0);
+        }
       } else {
         setStreak(0);
         setConsecutiveWrong((prev) => prev + 1);
+
+        // Track wrong answers per difficulty
+        if (currentDifficulty === "hard") {
+          setHardWrong((prev) => prev + 1);
+        } else if (currentDifficulty === "medium") {
+          setMediumWrong((prev) => prev + 1);
+        }
       }
 
-      // Record answer
+      // Record answer with topic information
       const result: AnswerResult = {
         questionId: currentQuestion.id,
         isCorrect: correct,
         timeTaken,
         difficulty: currentDifficulty,
         selectedAnswer: answerIndex,
+        topic: currentQuestion.topic, // Add topic for analysis
       };
 
       setAnswers((prev) => [...prev, result]);
@@ -653,6 +682,10 @@ export function useQuizEngine({
       showResult,
       questionStartTime,
       consecutiveWrong,
+      easyCorrect,
+      mediumCorrect,
+      hardWrong,
+      mediumWrong,
     ],
   );
 

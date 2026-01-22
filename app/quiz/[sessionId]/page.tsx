@@ -187,14 +187,38 @@ export default function QuizSessionPage({
     if (isSessionFinished && !isFinishing) {
       setIsFinishing(true);
 
+      // Save session data to localStorage for result page
+      if (typeof window !== "undefined") {
+        localStorage.setItem(
+          `quiz-session-${params.sessionId}`,
+          JSON.stringify({
+            answers,
+            correctCount,
+            wrongCount,
+            totalQuestions,
+            averageTime,
+          }),
+        );
+      }
+
       // Show "Generating Report..." for 2 seconds
       const timer = setTimeout(() => {
-        router.push(`/training/result-${params.sessionId}`);
+        router.push(`/training/result/${params.sessionId}`);
       }, 2000);
 
       return () => clearTimeout(timer);
     }
-  }, [isSessionFinished, isFinishing, params.sessionId, router]);
+  }, [
+    isSessionFinished,
+    isFinishing,
+    params.sessionId,
+    router,
+    answers,
+    correctCount,
+    wrongCount,
+    totalQuestions,
+    averageTime,
+  ]);
 
   // Show loading state when quiz is complete
   if (isFinishing) {

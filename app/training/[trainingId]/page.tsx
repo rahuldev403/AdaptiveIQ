@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { ExternalLink, Lightbulb, Calendar, X } from "lucide-react";
+import { ExternalLink, Lightbulb, Calendar, X, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import QuestionCard from "@/components/quiz/QuestionCard";
@@ -264,10 +265,15 @@ export default function TrainingGroundPage({
 }: {
   params: { trainingId: string };
 }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [activeHint, setActiveHint] = useState<string | null>(null);
   const [hintsUsed, setHintsUsed] = useState(0);
+
+  // Get sessionId from URL params or localStorage
+  const sessionId = searchParams.get("sessionId") || "";
 
   const handleUseHint = (citation: string) => {
     setActiveHint(citation);
@@ -278,6 +284,14 @@ export default function TrainingGroundPage({
     setShowResult(true);
   };
 
+  const handleBackToResults = () => {
+    if (sessionId) {
+      router.push(`/training/result/${sessionId}`);
+    } else {
+      router.push("/dashboard");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col lg:flex-row">
       {/* Left Panel - Question Interface */}
@@ -285,7 +299,16 @@ export default function TrainingGroundPage({
         {/* Header */}
         <div className="p-6 border-b border-slate-800 bg-slate-900">
           <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleBackToResults}
+                className="text-slate-400 hover:text-slate-100"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Results
+              </Button>
               <Badge className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20">
                 Training Mode
               </Badge>
