@@ -1,261 +1,224 @@
-# AdaptiQ Live 🚀
+# AdaptiQ Live
 
-> **AI-Powered Coding Learning Platform** for Microsoft GenAI Demo Day 2026
+An AI-powered coding learning platform with dynamic quizzes and real-time training ground.
 
-A revolutionary "Live Training Ground" that identifies weak topics, researches them in real-time using You.com API, and generates fresh questions based on the latest web data.
+## Features
 
-## 🌟 Key Features
+- 🎯 **Dynamic Dashboard**: Browse subjects and track your progress
+- 📝 **Database-Driven Quizzes**: 15 questions per subject with instant feedback
+- 🤖 **AI Training Ground**: Generate custom quizzes on any topic using You.com API
+- 🔐 **Clerk Authentication**: Secure modal-based authentication
+- 🎨 **Modern UI**: Built with Next.js 15, shadcn UI, and black/white theme
+- 📊 **Progress Tracking**: Monitor your performance across subjects
 
-### 1. **Real-Time Research & Generation**
-- Uses You.com's Smart Mode to research the latest best practices
-- Generates questions based on 2025 documentation and engineering blogs
-- **USP:** Every question comes with citation URLs showing the exact sources used
+## Tech Stack
 
-### 2. **Live Source Badge**
-- Each quiz card displays a "Generated from [domain]" badge
-- Shows which authoritative source (e.g., react.dev) was used
-- Animated live indicator for real-time feel
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript 5
+- **Database**: MongoDB (Native Driver)
+- **Authentication**: Clerk
+- **UI Library**: shadcn UI
+- **Styling**: Tailwind CSS
+- **AI**: You.com API
 
-### 3. **"Read Source" Button**
-- Appears when users get a question wrong
-- Opens the specific URL You.com used to generate the answer
-- Helps users learn directly from official documentation
-
-### 4. **Adaptive Learning**
-- Focus on weak topics identified by the system
-- Fresh content on every generation (no stale question banks)
-- Citations allow verification and deeper learning
-
-## 🛠️ Tech Stack
-
-- **Framework:** Next.js 15 (App Router)
-- **Language:** TypeScript
-- **Database:** MongoDB + Drizzle ORM
-- **AI Engine:** You.com API (Smart/Research Mode)
-- **Styling:** Tailwind CSS
-
-## 📦 Project Structure
-
-```
-adaptiq-live/
-├── actions/
-│   └── ai-generation.ts         # You.com API integration & quiz generation
-├── app/
-│   ├── layout.tsx               # Root layout
-│   ├── page.tsx                 # Main quiz interface
-│   └── globals.css              # Global styles
-├── components/
-│   ├── LiveSourceBadge.tsx      # "Generated from [domain]" badge
-│   ├── ReadSourceButton.tsx     # "Read Source" button with citations
-│   └── QuizCard.tsx             # Complete quiz card component
-├── lib/
-│   └── db/
-│       ├── index.ts             # MongoDB connection
-│       └── schema.ts            # Drizzle schema & TypeScript types
-├── .env.example                 # Environment variables template
-├── package.json
-├── tsconfig.json
-├── tailwind.config.ts
-└── drizzle.config.ts
-```
-
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ and npm
-- MongoDB (local or Atlas)
-- You.com API Key ([Get one here](https://you.com))
+- Node.js 18+ installed
+- MongoDB installed locally OR MongoDB Atlas account
+- Clerk account (free tier works)
+- You.com API key
 
-### Installation
+### 1. Install Dependencies
 
-1. **Clone the repository:**
-   ```bash
-   git clone <your-repo-url>
-   cd adaptiq-live
-   ```
+```bash
+npm install
+```
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+### 2. Set Up Environment Variables
 
-3. **Set up environment variables:**
-   ```bash
-   cp .env.example .env
-   ```
+Create a `.env.local` file in the root directory:
 
-   Edit `.env` and add your credentials:
-   ```env
-   YOU_COM_API_KEY=your_you_com_api_key_here
-   MONGODB_URI=mongodb://localhost:27017/adaptiq_live
-   ```
+```env
+# MongoDB Connection
+MONGODB_URI=mongodb://localhost:27017/adaptiq
+# OR for MongoDB Atlas:
+# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/adaptiq
 
-4. **Start MongoDB (if using local):**
-   ```bash
-   # macOS/Linux
-   mongod
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
+CLERK_SECRET_KEY=sk_test_xxxxx
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 
-   # Windows
-   net start MongoDB
-   ```
+# You.com API (for AI Training Ground)
+YOU_API_KEY=your-you-api-key
+```
 
-5. **Run the development server:**
-   ```bash
-   npm run dev
-   ```
+#### Getting Clerk Keys
 
-6. **Open your browser:**
-   Navigate to [http://localhost:3000](http://localhost:3000)
+1. Go to [clerk.com](https://clerk.com) and create a free account
+2. Create a new application
+3. Go to **API Keys** in the dashboard
+4. Copy the **Publishable Key** and **Secret Key**
 
-## 🎯 How It Works
+#### Getting You.com API Key
 
-### Backend Flow (actions/ai-generation.ts)
+1. Go to [api.you.com](https://api.you.com)
+2. Sign up and generate an API key
+
+### 3. Set Up MongoDB
+
+#### Option A: Local MongoDB
+
+```bash
+# macOS (with Homebrew)
+brew install mongodb-community
+brew services start mongodb-community
+
+# Windows: Download from mongodb.com and start service
+# Linux: sudo apt-get install mongodb && sudo systemctl start mongodb
+```
+
+#### Option B: MongoDB Atlas (Cloud)
+
+1. Create a free cluster at [mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas)
+2. Create database user and whitelist IP
+3. Get connection string and add to `.env.local`
+
+### 4. Seed the Database
+
+```bash
+npm run seed
+```
+
+Expected output:
+
+```
+✓ Connected to MongoDB
+✓ Inserted 4 subjects
+✓ Created indexes
+✅ Database seeded successfully!
+```
+
+### 5. Run Development Server
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000)
+
+## Project Structure
+
+```
+app/
+├── dashboard/          # User dashboard with subjects
+├── quiz/[id]/         # Quiz interface (15 questions)
+├── training-ground/   # AI-powered custom quiz generation
+├── layout.tsx         # Root layout with Clerk
+├── page.tsx           # Landing page
+└── globals.css        # Black/white theme
+
+actions/
+├── quiz-actions.ts    # Server actions for quiz data
+└── ai-generation.ts   # You.com AI integration
+
+components/ui/         # shadcn UI components
+lib/db/               # MongoDB connection & schema
+scripts/              # Database seeding
+```
+
+## Usage
+
+### Dashboard
+
+- View all subjects organized by category
+- Track progress on each subject
+- Start or continue quizzes
+
+### Quizzes
+
+- 15 multiple-choice questions per subject
+- Instant feedback with explanations
+- Automatic progress saving
+- Real-time scoring
+
+### Training Ground
+
+- Enter any programming topic
+- AI researches in real-time
+- Generates fresh questions with citations
+- Includes source documentation links
+
+## Database Schema
+
+### Subjects
 
 ```typescript
-generateLiveQuiz(weakTopic: string)
-  ↓
-fetchQuestionsFromYouAPI(topic)
-  ↓
-Call You.com Smart Mode API
-  ↓
-Parse JSON response + Extract citations
-  ↓
-Save to MongoDB (training_grounds collection)
-  ↓
-Return questions + source URLs
-```
-
-### API Call Example
-
-The system sends this prompt to You.com:
-
-```
-Research the latest best practices for "React Server Actions" as of 2025.
-Based on this research, generate 3 strictly formatted multiple-choice questions.
-
-CRITICAL REQUIREMENTS:
-- Prioritize official documentation and recent engineering blogs
-- Return ONLY valid JSON (no markdown, no code blocks)
-```
-
-### Response Format
-
-```json
 {
-  "questions": [
-    {
-      "id": "q1",
-      "question": "What is the recommended way to handle mutations in Next.js 15?",
-      "options": ["useState", "useFormState", "useActionState", "useMutation"],
-      "correct_answer": 2,
-      "explanation": "useActionState is the new React 19 hook...",
-      "difficulty": "medium"
-    }
-  ],
-  "citations": [
-    {
-      "title": "Server Actions - Next.js",
-      "url": "https://nextjs.org/docs/app/api-reference/functions/server-actions",
-      "snippet": "Server Actions are asynchronous functions..."
-    }
-  ]
+  title: string,
+  description: string,
+  icon: string,
+  category: "Frontend" | "Backend" | "Languages",
+  questions: Array<Question>,
+  created_at: Date
 }
 ```
 
-## 📊 Database Schema
+### User Progress
 
-### `training_grounds` Collection
+```typescript
+{
+  user_id: string,
+  subject_id: ObjectId,
+  completed_questions: number[],
+  score: number,
+  last_attempt: Date
+}
+```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `_id` | ObjectId | MongoDB document ID |
-| `topic` | String | The weak topic being practiced |
-| `generated_at` | Date | When the quiz was generated |
-| `raw_ai_response` | Object | Questions array + citations |
-| `source_links` | Array | URLs You.com used (the USP!) |
+## Deployment
 
-## 🎨 UI Components
+### Vercel (Recommended)
 
-### LiveSourceBadge
-- Shows the domain of the primary source
-- Animated pulse indicator
-- Gradient background with border
+1. Push code to GitHub
+2. Import in [Vercel](https://vercel.com)
+3. Add environment variables
+4. Deploy
 
-### ReadSourceButton
-- Appears when answer is wrong
-- Links to official documentation
-- Expandable list for multiple sources
+**Required Environment Variables:**
 
-### QuizCard
-- Multiple choice interface
-- Real-time feedback
-- Color-coded correct/incorrect answers
-- Integrated source badge and read button
+- `MONGODB_URI` (MongoDB Atlas for production)
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+- `CLERK_SECRET_KEY`
+- `NEXT_PUBLIC_CLERK_SIGN_IN_URL`
+- `NEXT_PUBLIC_CLERK_SIGN_UP_URL`
+- `YOU_API_KEY`
 
-## 🔑 Key Implementation Details
+## Troubleshooting
 
-### 1. **Strict JSON Parsing**
-The You.com API prompt enforces strict JSON output to avoid parsing errors:
-- No markdown code blocks
-- No extra text
-- Validated structure before parsing
+### MongoDB Connection Error
 
-### 2. **Citation Extraction**
-The system extracts citations from two sources:
-- **AI-generated citations** (in the JSON response)
-- **You.com metadata citations** (from API response)
+```
+Error: connect ECONNREFUSED 127.0.0.1:27017
+```
 
-### 3. **Error Handling**
-Comprehensive error handling for:
-- API failures
-- JSON parsing errors
-- Database connection issues
-- Missing environment variables
+**Solution**: Ensure MongoDB is running or use MongoDB Atlas.
 
-## 🧪 Testing the System
+### Clerk Not Working
 
-1. **Enter a topic:** e.g., "React Server Actions"
-2. **Click "Generate Quiz"**
-3. **Observe:**
-   - Live Source badge appears with the domain
-   - Questions are fresh and based on 2025 practices
-   - When you answer wrong, "Read Source" button appears
-4. **Click "Read Source"** to verify the citations
+**Solution**: Verify Clerk keys in `.env.local` and restart dev server.
 
-## 📈 Future Enhancements
+### Seed Script Fails
 
-- [ ] User authentication and progress tracking
-- [ ] Difficulty adaptation based on performance
-- [ ] Spaced repetition algorithm
-- [ ] Team leaderboards
-- [ ] More AI providers (OpenAI, Anthropic)
-- [ ] Mobile app (React Native)
+**Solution**: Check `MONGODB_URI` is set and MongoDB is accessible.
 
-## 🏆 Demo Day Pitch Points
+## License
 
-1. **"Always Fresh" USP:** Unlike static question banks, every question is researched in real-time from 2025 sources
-2. **Transparency:** Users see exactly which sources were used (citations)
-3. **Learning Focused:** "Read Source" button turns mistakes into learning opportunities
-4. **Scalable:** Works for any programming topic or framework
-5. **Enterprise Ready:** Built with Next.js 15, TypeScript, and production-grade architecture
-
-## 🤝 Contributing
-
-This project was built for the Microsoft GenAI Demo Day. Contributions are welcome!
-
-## 📄 License
-
-MIT License - feel free to use this for your own projects!
-
-## 🙏 Acknowledgments
-
-- **You.com** for their powerful AI search API
-- **Vercel** for Next.js 15 and App Router
-- **MongoDB** for flexible document storage
-- **Microsoft** for hosting the GenAI Demo Day
+MIT License
 
 ---
 
-**Built with ❤️ for the future of adaptive learning**
-# AdaptiveIQ
+Built with Next.js, MongoDB, Clerk, and You.com AI

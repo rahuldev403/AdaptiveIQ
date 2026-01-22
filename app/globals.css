@@ -1,0 +1,109 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Editor Dark Mode Theme Variables */
+  :root {
+    --background: 222 47% 11%; /* slate-900 */
+    --foreground: 210 40% 98%; /* slate-50 */
+    --card: 222 47% 11%; /* slate-900 */
+    --card-foreground: 210 40% 98%; /* slate-50 */
+    --popover: 217 33% 17%; /* slate-800 */
+    --popover-foreground: 210 40% 98%; /* slate-50 */
+    --primary: 239 84% 67%; /* indigo-500 */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 215 28% 17%; /* slate-800 */
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 17%; /* slate-800 */
+    --muted-foreground: 215 20% 65%; /* slate-400 */
+    --accent: 217 33% 17%; /* slate-800 */
+    --accent-foreground: 210 40% 98%;
+    --destructive: 350 89% 60%; /* rose-500 */
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 17%; /* slate-800 */
+    --input: 217 33% 17%; /* slate-800 */
+    --ring: 239 84% 67%; /* indigo-500 */
+    --radius: 0.5rem;
+    --chart-1: 239 84% 67%; /* indigo-500 */
+    --chart-2: 158 64% 52%; /* emerald-500 */
+    --chart-3: 43 96% 56%; /* amber-500 */
+    --chart-4: 350 89% 60%; /* rose-500 */
+    --chart-5: 262 83% 58%; /* purple-500 */
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-[#020617] text-slate-200 antialiased;
+    font-family: "Inter", system-ui, sans-serif;
+  }
+
+  /* Code blocks styling */
+  code,
+  pre,
+  kbd,
+  samp {
+    font-family: "JetBrains Mono", "Consolas", monospace;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Selection colors */
+  ::selection {
+    @apply bg-primary/30 text-slate-50;
+  }
+}
+
+@layer components {
+  /* Glass Panel Utility */
+  .glass-panel {
+    @apply backdrop-blur-md bg-slate-900/70 border border-slate-800;
+  }
+
+  /* Code block styling */
+  .code-block {
+    @apply bg-slate-900 border border-slate-800 rounded-lg p-4 font-mono text-sm;
+  }
+
+  /* Focus ring utility */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Gradient text utilities */
+  .text-gradient-primary {
+    @apply bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-success {
+    @apply bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent;
+  }
+
+  /* Scrollbar styling */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-slate-900;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-slate-700 rounded-full hover:bg-slate-600;
+  }
+}
