@@ -50,7 +50,7 @@ function ScoreHero({ score, correctAnswers, totalQuestions }: ScoreHeroProps) {
     { name: "Incorrect", value: 100 - score },
   ];
 
-  const COLORS = ["#4f46e5", "#1e293b"]; // Indigo-600, Slate-800
+  const COLORS = ["rgb(79 70 229)", "rgb(30 41 59)"]; // Indigo-600, Slate-800
 
   return (
     <motion.div
