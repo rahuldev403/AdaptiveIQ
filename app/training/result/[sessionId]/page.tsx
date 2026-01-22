@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Microscope,
@@ -12,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { generateLiveQuiz } from "@/actions/ai-generation";
 
 // Mock session data - replace with real data fetching
 interface SessionResult {
@@ -184,18 +186,34 @@ export default function SessionResultPage({
   params: { sessionId: string };
 }) {
   const router = useRouter();
+  const { userId } = useAuth();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleEnterTrainingGround = async () => {
+    if (!userId) {
+      setError("You must be logged in to access the training ground");
+      return;
+    }
+
     setIsGenerating(true);
+    setError(null);
 
-    // Simulate API call - replace with real server action
-    // await generateLiveQuiz(mockSessionData.weakTopic);
+    try {
+      // Call the real server action
+      const result = await generateLiveQuiz(mockSessionData.weakTopic, userId);
 
-    // Redirect after 3.5 seconds (time for all logs to show)
-    setTimeout(() => {
-      router.push(`/training/${params.sessionId}`);
-    }, 3500);
+      // Wait for terminal animation to complete (3.5 seconds)
+      setTimeout(() => {
+        router.push(`/training/${result.trainingId}`);
+      }, 3500);
+    } catch (err) {
+      console.error("Failed to generate training ground:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to generate training ground",
+      );
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -278,6 +296,17 @@ export default function SessionResultPage({
                 patch this gap with live data from the latest 2025 documentation
                 and real-world examples.
               </p>
+
+              {/* Error Message */}
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-4 p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg"
+                >
+                  <p className="text-rose-400 text-sm">{error}</p>
+                </motion.div>
+              )}
 
               {/* Action Button or Loading Terminal */}
               <AnimatePresence mode="wait">
